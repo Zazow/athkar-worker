@@ -1,15 +1,5 @@
 import jwt from '@tsndr/cloudflare-worker-jwt';
 
-const validateString = value => {
-	return Boolean(Number(value)) || value === 'true' || value === 'false' || value.charAt(0) === "=" || value.charAt(0) === "+";
-};
-
-const validateEmail = value => {
-	// const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-	// const emailRegex = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/;
-	const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-	return typeof value === 'string' && emailRegex.test(value);
-};
 
 async function getJWTAccessToken(env) {
 	const iat = Math.floor(Date.now() / 1000);
@@ -22,7 +12,7 @@ async function getJWTAccessToken(env) {
 			exp,
 			iat,
 		},
-		JSON.parse(env.GOOGLE_SHEETS_PRIVATE_KEY),
+		env.GOOGLE_SHEETS_PRIVATE_KEY,
 		{ algorithm: 'RS256' }
 	);
 	return jwtToken;
