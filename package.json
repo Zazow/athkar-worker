@@ -8,8 +8,7 @@
 		"test": "vitest"
 	},
 	"dependencies": {
-		"@tsndr/cloudflare-worker-jwt": "^2.5.3",
-		"itty-router": "^2.6.1"
+		"@tsndr/cloudflare-worker-jwt": "^2.5.3"
 	},
 	"devDependencies": {
 		"wrangler": "^3.0.0"
