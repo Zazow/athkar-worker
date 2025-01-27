@@ -1,6 +1,5 @@
 import jwt from '@tsndr/cloudflare-worker-jwt';
 
-
 async function getJWTAccessToken(env) {
 	const iat = Math.floor(Date.now() / 1000);
 	const exp = iat + 3600;
@@ -33,10 +32,14 @@ async function getGoogleSheetsAccessToken(env) {
 	return response.access_token;
 }
 
-async function getAllRows(accessToken, env) {
+async function getAllRows(sheets, accessToken, env) {
 	try {
+    const rangesParam = sheets
+      .map(range => `ranges=${encodeURIComponent(range)}`)
+      .join('&');
+
 		const response = await fetch(
-			`https://sheets.googleapis.com/v4/spreadsheets/${env.GOOGLE_SHEETS_ID}/values/${env.GOOGLE_SHEETS_PAGE}?majorDimension=ROWS`,
+			`https://sheets.googleapis.com/v4/spreadsheets/${env.GOOGLE_SHEETS_ID}/values:batchGet?${rangesParam}`, // /${env.GOOGLE_SHEETS_PAGE}`,
 			{
 				method: 'GET',
 				headers: {
@@ -48,7 +51,7 @@ async function getAllRows(accessToken, env) {
 		if (response.ok) {
 			const data = await response.json();
 			return {
-				data: data.values, // Pull all rows as an array of arrays
+				data: data.valueRanges, // Pull all rows as an array of arrays
 				status: response.status,
 			};
 		} else {
@@ -68,7 +71,7 @@ async function getAllRows(accessToken, env) {
 export default {
 	async fetch(request, env) {
     const accessToken = await getGoogleSheetsAccessToken(env);
-    const rows = await getAllRows(accessToken, env);
+    const rows = await getAllRows(["'Ayat'", "'Athkar'"], accessToken, env);
 		return new Response(JSON.stringify(rows), {
 			headers: {
 				'Content-Type': 'application/json',
