@@ -33,7 +33,6 @@ async function getGoogleSheetsAccessToken(env) {
 }
 
 async function getAllRows(sheets, accessToken, env) {
-	try {
     const rangesParam = sheets
       .map(range => `ranges=${encodeURIComponent(range)}`)
       .join('&');
@@ -49,9 +48,27 @@ async function getAllRows(sheets, accessToken, env) {
 		);
 		
 		if (response.ok) {
-			const data = await response.json();
+			const res = await response.json();
+      const data = {}
+      for (let sheet of res.valueRanges) {
+        if (sheet.values === undefined || sheet.values.length === 0) {
+          continue;
+        }
+        const sheetName = sheet.range.split("!")[0];
+        const header = sheet.values[0];
+        const sheetData = []
+        for (let i = 1; i < sheet.values.length; i++) {
+          const row = {}
+          for (let j = 0; j < header.length; j++) {
+            row[header[j]] = sheet.values[i][j];
+          }
+          sheetData.push(row);
+        }
+        data[sheetName] = sheetData;
+      }
+
 			return {
-				data: data.valueRanges, // Pull all rows as an array of arrays
+				data: data, // Pull all rows as an array of arrays
 				status: response.status,
 			};
 		} else {
@@ -60,11 +77,6 @@ async function getAllRows(sheets, accessToken, env) {
 				status: response.status,
 			};
 		}
-	} catch (error) {
-		return {
-			error: error,
-		};
-	}
 }
 
 
